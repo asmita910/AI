@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FOA Intelligence Monitor</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Primary navigation">
+        <div class="brand">
+          <div class="brand-mark">F</div>
+          <div>
+            <strong>FOA Intel</strong>
+            <span>Real-time monitoring</span>
+          </div>
+        </div>
+
+        <nav class="nav-list">
+          <button class="nav-item active" data-section="dashboard" title="Dashboard">
+            <span class="icon">⌁</span><span>Dashboard</span>
+          </button>
+          <button class="nav-item" data-section="sources" title="Sources">
+            <span class="icon">◫</span><span>Sources</span>
+          </button>
+          <button class="nav-item" data-section="archive" title="Archive">
+            <span class="icon">⌕</span><span>Archive</span>
+          </button>
+          <button class="nav-item" data-section="reports" title="Reports">
+            <span class="icon">▤</span><span>Reports</span>
+          </button>
+        </nav>
+
+        <div class="system-card">
+          <div class="status-dot"></div>
+          <div>
+            <strong>Monitoring active</strong>
+            <span id="uptime">00:00:00</span>
+          </div>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Command center</p>
+            <h1>AI-Powered Real-Time Monitoring & Intelligence Alert Platform</h1>
+          </div>
+          <div class="toolbar" aria-label="Dashboard controls">
+            <label class="search">
+              <span>⌕</span>
+              <input id="searchInput" type="search" placeholder="Search alerts, sources, regions" />
+            </label>
+            <select id="priorityFilter" aria-label="Filter by priority">
+              <option value="all">All priorities</option>
+              <option value="critical">Critical</option>
+              <option value="high">High</option>
+              <option value="watch">Watch</option>
+            </select>
+            <button id="simulateBtn" class="primary-btn">Detect update</button>
+          </div>
+        </header>
+
+        <section id="dashboard" class="page-section active">
+          <div class="metrics-grid">
+            <article class="metric">
+              <span>Detection latency</span>
+              <strong id="latencyMetric">18s</strong>
+              <small>Target: under 30 seconds</small>
+            </article>
+            <article class="metric">
+              <span>Sources online</span>
+              <strong id="sourcesMetric">34</strong>
+              <small>Web, X, Telegram, Instagram, YouTube</small>
+            </article>
+            <article class="metric">
+              <span>Alerts today</span>
+              <strong id="alertsMetric">127</strong>
+              <small>18 high priority</small>
+            </article>
+            <article class="metric">
+              <span>Translation queue</span>
+              <strong id="queueMetric">4</strong>
+              <small>Arabic and Hebrew to English</small>
+            </article>
+          </div>
+
+          <div class="dashboard-grid">
+            <section class="panel alert-panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Live intelligence</p>
+                  <h2>Structured Alerts</h2>
+                </div>
+                <span id="lastUpdated" class="timestamp">Updated now</span>
+              </div>
+              <div id="alertsList" class="alerts-list"></div>
+            </section>
+
+            <section class="panel detail-panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">AI summary</p>
+                  <h2 id="detailTitle">Select an alert</h2>
+                </div>
+                <span id="detailPriority" class="priority-pill watch">Watch</span>
+              </div>
+              <div class="translation-card">
+                <div>
+                  <span class="label">Original</span>
+                  <p id="originalText"></p>
+                </div>
+                <div>
+                  <span class="label">English translation</span>
+                  <p id="translatedText"></p>
+                </div>
+              </div>
+              <div class="summary-block">
+                <span class="label">Context summary</span>
+                <p id="summaryText"></p>
+              </div>
+              <div class="detail-actions">
+                <button id="ackBtn">Acknowledge</button>
+                <button id="escalateBtn">Escalate</button>
+                <button id="copyBriefBtn">Copy brief</button>
+              </div>
+            </section>
+
+            <section class="panel map-panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Signal map</p>
+                  <h2>Regional Activity</h2>
+                </div>
+                <span class="timestamp">5 min window</span>
+              </div>
+              <div class="signal-map" aria-label="Regional signal activity visualization">
+                <div class="region r1"><span>Jerusalem</span></div>
+                <div class="region r2"><span>Gaza</span></div>
+                <div class="region r3"><span>Ramallah</span></div>
+                <div class="region r4"><span>Tel Aviv</span></div>
+                <div class="pulse p1"></div>
+                <div class="pulse p2"></div>
+                <div class="pulse p3"></div>
+              </div>
+            </section>
+
+            <section class="panel workflow-panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Automation</p>
+                  <h2>Monitoring Pipeline</h2>
+                </div>
+              </div>
+              <ol class="pipeline">
+                <li><span>01</span><strong>Continuous monitoring</strong><small>Scheduler watches every source.</small></li>
+                <li><span>02</span><strong>Content extraction</strong><small>Posts, articles, captions, and video metadata.</small></li>
+                <li><span>03</span><strong>Filter & translate</strong><small>Relevance scoring with Arabic/Hebrew translation.</small></li>
+                <li><span>04</span><strong>Summarize & alert</strong><small>Priority, context, timestamp, and source link.</small></li>
+              </ol>
+            </section>
+          </div>
+        </section>
+
+        <section id="sources" class="page-section">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Coverage</p>
+              <h2>Multi-Platform Monitoring</h2>
+            </div>
+            <button id="refreshSourcesBtn">Refresh sources</button>
+          </div>
+          <div id="sourceGrid" class="source-grid"></div>
+        </section>
+
+        <section id="archive" class="page-section">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Searchable history</p>
+              <h2>Intelligence Archive</h2>
+            </div>
+            <button id="exportArchiveBtn">Export CSV</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Source</th>
+                  <th>Region</th>
+                  <th>Priority</th>
+                  <th>Summary</th>
+                </tr>
+              </thead>
+              <tbody id="archiveRows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="reports" class="page-section">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">AI reports</p>
+              <h2>Daily Intelligence Brief</h2>
+            </div>
+            <button id="generateReportBtn" class="primary-btn">Generate report</button>
+          </div>
+          <div class="reports-layout">
+            <div class="panel">
+              <div class="panel-header">
+                <h2>Trend Analytics</h2>
+                <span class="timestamp">Last 24 hours</span>
+              </div>
+              <div class="bar-chart" id="barChart"></div>
+            </div>
+            <div class="panel report-output">
+              <div class="panel-header">
+                <h2>Generated Brief</h2>
+                <span id="reportStatus" class="timestamp">Ready</span>
+              </div>
+              <div id="reportText"></div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>
