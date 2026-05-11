@@ -1,0 +1,29 @@
+{
+  "name": "new-project",
+  "version": "1.0.0",
+  "description": "A static MVP for an AI-powered real-time monitoring and intelligence alert platform, built from the provided PDF brief.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/asmita910/AI.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/asmita910/AI/issues"
+  },
+  "homepage": "https://github.com/asmita910/AI#readme",
+  "dependencies": {
+    "axios": "^1.16.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "node-cron": "^4.2.1",
+    "telegraf": "^4.16.3"
+  }
+}

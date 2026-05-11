@@ -1,54 +1,4 @@
-const alerts = [
-  {
-    id: "a-101",
-    time: "09:42",
-    source: "Quds News Network",
-    platform: "Telegram",
-    region: "Jerusalem",
-    priority: "critical",
-    title: "Coordinated calls for rapid gathering near Old City gates",
-    original: "دعوات للتجمع الفوري قرب أبواب البلدة القديمة بعد انتشار مقاطع من المكان.",
-    translation: "Calls for immediate gathering near the Old City gates after videos from the location began circulating.",
-    summary: "AI detected repeated cross-channel amplification of the same gathering call. The update is time-sensitive because it is spreading across Telegram and X within a short window.",
-  },
-  {
-    id: "a-102",
-    time: "09:36",
-    source: "Temple Institute",
-    platform: "Website",
-    region: "Jerusalem",
-    priority: "high",
-    title: "New event notice published with unusually high resharing velocity",
-    original: "הודעה חדשה פורסמה באתר ומתפשטת במהירות ברשתות החברתיות.",
-    translation: "A new announcement was published on the site and is spreading rapidly across social networks.",
-    summary: "The classifier marked the post as high priority because several monitored accounts reshared it within eight minutes and comments reference planned attendance.",
-  },
-  {
-    id: "a-103",
-    time: "09:28",
-    source: "PNN",
-    platform: "News Website",
-    region: "Ramallah",
-    priority: "watch",
-    title: "Regional media repeats developing situation from local correspondents",
-    original: "مصادر محلية تتحدث عن تطورات ميدانية وتدعو لمتابعة التحديثات.",
-    translation: "Local sources are reporting field developments and calling for continued updates.",
-    summary: "The item is relevant but still lacks corroboration from higher-confidence sources. Keep in the watch queue and compare against the next scrape cycle.",
-  },
-  {
-    id: "a-104",
-    time: "09:17",
-    source: "AlQuds",
-    platform: "Instagram",
-    region: "Gaza",
-    priority: "high",
-    title: "Visual post shows crowd movement and receives fast engagement spike",
-    original: "منشور مصور يظهر حركة حشود مع ارتفاع سريع في التفاعل.",
-    translation: "A visual post shows crowd movement with a rapid rise in engagement.",
-    summary: "Computer-vision tagging detected crowd density and the engagement trend exceeded normal baseline for this account by 3.4x.",
-  },
-];
-
+let alerts = [];
 const sourceData = [
   { name: "Quds News Network", platform: "Telegram", icon: "T", health: 97, alerts: 31, cadence: "15 sec" },
   { name: "Temple Institute", platform: "Website", icon: "W", health: 94, alerts: 12, cadence: "60 sec" },
@@ -66,9 +16,9 @@ const trendData = [
   ["YouTube", 10],
 ];
 
-let selectedAlertId = alerts[0].id;
-let alertCount = 127;
-let queueCount = 4;
+let selectedAlertId = null;
+let alertCount = 0;
+let queueCount = 0;
 const startTime = Date.now();
 
 const els = {
@@ -94,8 +44,63 @@ const els = {
   reportStatus: document.querySelector("#reportStatus"),
 };
 
+// --- API FETCHING ---
+const API_URL = '/api';
+
+async function fetchAlerts() {
+  try {
+    const response = await fetch(`${API_URL}/alerts`);
+    const data = await response.json();
+    
+    // Check if we have new alerts
+    if (data.length > alerts.length && alerts.length > 0) {
+      showToast("New intelligence alert detected");
+    }
+    
+    alerts = data;
+    if (!selectedAlertId && alerts.length > 0) {
+      selectedAlertId = alerts[0].id;
+    }
+    
+    updateMetrics();
+    renderAlerts();
+    renderDetail();
+    renderArchive();
+  } catch (err) {
+    console.error('Failed to fetch alerts:', err);
+    showToast("Error connecting to live server");
+  }
+}
+
+async function simulateHit() {
+  try {
+    const response = await fetch(`${API_URL}/simulate-hit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        source: "Manual Trigger",
+        platform: "Web Console",
+        region: "Jerusalem",
+        priority: "high",
+        title: "Manually triggered detection event",
+        original: "حدث تم تحفيزه يدويا من لوحة التحكم.",
+        translation: "An event manually triggered from the control panel.",
+        summary: "This alert was generated manually to test the end-to-end notification pipeline.",
+      })
+    });
+    const result = await response.json();
+    if (result.success) {
+      fetchAlerts();
+    }
+  } catch (err) {
+    showToast("Failed to trigger simulation");
+  }
+}
+
+// --- UI RENDERING ---
+
 function priorityLabel(priority) {
-  return priority.charAt(0).toUpperCase() + priority.slice(1);
+  return priority ? (priority.charAt(0).toUpperCase() + priority.slice(1)) : 'Unknown';
 }
 
 function filteredAlerts() {
@@ -124,7 +129,10 @@ function renderAlerts() {
     item.innerHTML = `
       <div class="alert-title-row">
         <strong>${alert.title}</strong>
-        <span class="priority-pill ${alert.priority}">${priorityLabel(alert.priority)}</span>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          ${alert.category ? `<span class="category-pill">${alert.category}</span>` : ''}
+          <span class="priority-pill ${alert.priority}">${priorityLabel(alert.priority)}</span>
+        </div>
       </div>
       <div class="alert-meta">
         <span>${alert.time}</span>
@@ -143,7 +151,10 @@ function renderAlerts() {
 }
 
 function renderDetail() {
+  if (alerts.length === 0) return;
   const alert = alerts.find((item) => item.id === selectedAlertId) || filteredAlerts()[0] || alerts[0];
+  if (!alert) return;
+
   selectedAlertId = alert.id;
   els.detailTitle.textContent = alert.title;
   els.detailPriority.className = `priority-pill ${alert.priority}`;
@@ -209,48 +220,27 @@ function renderTrends() {
   });
 }
 
+function updateMetrics() {
+  els.alertsMetric.textContent = alerts.length;
+  els.queueMetric.textContent = Math.floor(alerts.length / 5);
+  els.lastUpdated.textContent = "Updated now";
+}
+
 function showToast(message) {
   els.toast.textContent = message;
   els.toast.classList.add("show");
   window.setTimeout(() => els.toast.classList.remove("show"), 2100);
 }
 
-function simulateAlert() {
-  const now = new Date();
-  const generated = {
-    id: `a-${Math.floor(Math.random() * 9000) + 1000}`,
-    time: now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    source: "Beyadenu",
-    platform: "X/Twitter",
-    region: "Jerusalem",
-    priority: Math.random() > 0.45 ? "high" : "critical",
-    title: "Fresh cross-platform signal detected from monitored account cluster",
-    original: "עדכון חדש מתפשט במהירות ומוזכר על ידי מספר חשבונות במקביל.",
-    translation: "A new update is spreading rapidly and is being referenced by several accounts at the same time.",
-    summary: "The system detected a synchronized signal across monitored accounts. Translation, relevance scoring, and priority classification completed automatically.",
-  };
-  alerts.unshift(generated);
-  selectedAlertId = generated.id;
-  alertCount += 1;
-  queueCount = Math.max(0, queueCount - 1);
-  els.alertsMetric.textContent = alertCount;
-  els.queueMetric.textContent = queueCount;
-  els.latencyMetric.textContent = `${Math.floor(Math.random() * 18) + 10}s`;
-  els.lastUpdated.textContent = "Updated now";
-  renderAlerts();
-  renderDetail();
-  renderArchive();
-  showToast("New intelligence alert detected");
-}
-
 function generateReport(silent = false) {
+  if (alerts.length === 0) return;
   const critical = alerts.filter((alert) => alert.priority === "critical").length;
   const high = alerts.filter((alert) => alert.priority === "high").length;
   els.reportStatus.textContent = "Generated now";
   els.reportText.innerHTML = `
     <div class="brief-section">
       <strong>Executive signal</strong>
-      <p>${critical} critical and ${high} high-priority items were detected across monitored sources, with Jerusalem producing the highest concentration of actionable updates.</p>
+      <p>${critical} critical and ${high} high-priority items were detected across monitored sources.</p>
     </div>
     <div class="brief-section">
       <strong>Priority developments</strong>
@@ -258,7 +248,7 @@ function generateReport(silent = false) {
     </div>
     <div class="brief-section">
       <strong>Recommended next steps</strong>
-      <p>Keep Telegram and X/Twitter in accelerated polling mode, maintain translation review for high-confidence alerts, and share the current structured brief with response coordinators.</p>
+      <p>Maintain translation review for high-confidence alerts, and share the current structured brief with response coordinators.</p>
     </div>
   `;
   if (!silent) {
@@ -288,6 +278,8 @@ function updateUptime() {
   els.uptime.textContent = `${h}:${m}:${s}`;
 }
 
+// --- EVENT LISTENERS ---
+
 document.querySelectorAll(".nav-item").forEach((button) => {
   button.addEventListener("click", () => {
     document.querySelectorAll(".nav-item").forEach((item) => item.classList.remove("active"));
@@ -299,27 +291,22 @@ document.querySelectorAll(".nav-item").forEach((button) => {
 
 els.searchInput.addEventListener("input", renderAlerts);
 els.priorityFilter.addEventListener("change", renderAlerts);
-document.querySelector("#simulateBtn").addEventListener("click", simulateAlert);
+document.querySelector("#simulateBtn").addEventListener("click", simulateHit);
 document.querySelector("#ackBtn").addEventListener("click", () => showToast("Alert acknowledged"));
 document.querySelector("#escalateBtn").addEventListener("click", () => showToast("Alert escalated to response team"));
+
 document.querySelector("#copyBriefBtn").addEventListener("click", async () => {
   const alert = alerts.find((item) => item.id === selectedAlertId);
+  if (!alert) return;
   const brief = `${alert.title}\nPriority: ${priorityLabel(alert.priority)}\nSource: ${alert.source} (${alert.platform})\n\n${alert.summary}`;
   try {
     await navigator.clipboard.writeText(brief);
     showToast("Brief copied");
   } catch {
-    const textarea = document.createElement("textarea");
-    textarea.value = brief;
-    textarea.style.position = "fixed";
-    textarea.style.opacity = "0";
-    document.body.appendChild(textarea);
-    textarea.select();
-    document.execCommand("copy");
-    textarea.remove();
-    showToast("Brief copied");
+    showToast("Failed to copy brief");
   }
 });
+
 document.querySelector("#refreshSourcesBtn").addEventListener("click", () => {
   sourceData.forEach((source) => {
     source.health = Math.min(99, Math.max(80, source.health + Math.floor(Math.random() * 7) - 3));
@@ -327,13 +314,13 @@ document.querySelector("#refreshSourcesBtn").addEventListener("click", () => {
   renderSources();
   showToast("Source health refreshed");
 });
-document.querySelector("#exportArchiveBtn").addEventListener("click", exportArchive);
-document.querySelector("#generateReportBtn").addEventListener("click", generateReport);
 
-renderAlerts();
-renderDetail();
+document.querySelector("#exportArchiveBtn").addEventListener("click", exportArchive);
+document.querySelector("#generateReportBtn").addEventListener("click", () => generateReport(false));
+
+// --- INITIALIZATION ---
+fetchAlerts();
+setInterval(fetchAlerts, 5000); // Poll every 5 seconds
 renderSources();
-renderArchive();
 renderTrends();
-generateReport(true);
 setInterval(updateUptime, 1000);
