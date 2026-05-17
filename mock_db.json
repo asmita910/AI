@@ -1,0 +1,129 @@
+{
+  "sources": [
+    {
+      "name": "Al-Quds",
+      "platform": "News Website",
+      "region": "Jerusalem",
+      "url": "https://www.alquds.com/en",
+      "active": true
+    },
+    {
+      "name": "The New Arab",
+      "platform": "News Website",
+      "region": "Regional",
+      "url": "https://www.newarab.com/tag/al-aqsa",
+      "active": true
+    },
+    {
+      "name": "PNN",
+      "platform": "News Website",
+      "region": "Palestine",
+      "url": "https://english.pnn.ps/",
+      "active": true
+    },
+    {
+      "name": "Beyadenu",
+      "platform": "Instagram",
+      "region": "Jerusalem",
+      "url": "https://www.instagram.com/beyadenu_il/",
+      "active": true
+    },
+    {
+      "name": "Beyadenu",
+      "platform": "X / Social",
+      "region": "Jerusalem",
+      "url": "https://x.com/Beyadenu",
+      "active": true
+    },
+    {
+      "name": "Beyadenu",
+      "platform": "YouTube",
+      "region": "Jerusalem",
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCYHEgzmPpZUX22jDsKHaCNw",
+      "active": true
+    },
+    {
+      "name": "Temple Institute",
+      "platform": "Instagram",
+      "region": "Jerusalem",
+      "url": "https://www.instagram.com/templeinstitute/",
+      "active": true
+    },
+    {
+      "name": "Quds News Network",
+      "platform": "News / Social",
+      "region": "Jerusalem",
+      "url": "https://qudsn.co/",
+      "active": true
+    },
+    {
+      "name": "Al-Haya",
+      "platform": "News Website",
+      "region": "Palestine",
+      "url": "https://www.alhaya.ps/ar",
+      "active": true
+    },
+    {
+      "name": "Dunia Al-Watan",
+      "platform": "News Website",
+      "region": "Palestine",
+      "url": "https://www.alwatanvoice.com/",
+      "active": true
+    },
+    {
+      "name": "Felesteen News",
+      "platform": "News Website",
+      "region": "Palestine",
+      "url": "https://felesteen.news/",
+      "active": true
+    },
+    {
+      "name": "Al-Ayyam",
+      "platform": "News Website",
+      "region": "Palestine",
+      "url": "https://www.alayyam.info/",
+      "active": true
+    }
+  ],
+  "alerts": [
+    {
+      "id": "live-aa-1715561200",
+      "time": "10:45 AM",
+      "title": "Israeli Ministers Request Mass Entry to Al-Aqsa for Jerusalem Day",
+      "original": "Nine Israeli ministers and 13 Knesset members have requested police permission for mass incursions into the Al-Aqsa compound this Friday.",
+      "translation": "Nine Israeli ministers and 13 Knesset members have requested police permission for mass incursions into the Al-Aqsa compound this Friday.",
+      "summary": "A significant political escalation as high-ranking Israeli officials push for mass access to the Al-Aqsa compound. The request coincides with the anniversary of the 1967 occupation and has raised severe security concerns.",
+      "bullets": [
+        "9 ministers and 13 MKs formally signed the request.",
+        "Event scheduled for Friday, May 15th.",
+        "Move is seen as a challenge to the historical status quo."
+      ],
+      "category": "Escalation",
+      "priority": "critical",
+      "source": "Anadolu Agency",
+      "platform": "News Website",
+      "region": "Jerusalem",
+      "matchedKeywords": ["Al-Aqsa", "mass incursions", "status quo"]
+    },
+    {
+      "id": "live-jn-1715561100",
+      "time": "09:30 AM",
+      "title": "Settler Incursions Reported at Al-Aqsa Compound Under Police Protection",
+      "original": "Groups of settlers entered the Al-Aqsa Mosque compound under the protection of Israeli police conducting rituals and provocative tours.",
+      "translation": "Groups of settlers entered the Al-Aqsa Mosque compound under the protection of Israeli police conducting rituals and provocative tours.",
+      "summary": "Monitored sources confirm new incursions into the Al-Aqsa courtyards by settler groups. Israeli police provided security for the tours, which included the performance of religious rituals.",
+      "bullets": [
+        "Incursions occurred on Tuesday morning.",
+        "Settlers conducted 'provocative tours' in the compound.",
+        "Increased police presence noted during the activity."
+      ],
+      "category": "Al-Aqsa News",
+      "priority": "high",
+      "source": "Jordan News",
+      "platform": "News Website",
+      "region": "Jerusalem",
+      "matchedKeywords": ["Al-Aqsa", "settlers", "incursions"]
+    }
+  ],
+  "logs": []
+}

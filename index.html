@@ -59,7 +59,7 @@
               <option value="high">High</option>
               <option value="watch">Watch</option>
             </select>
-            <button id="simulateBtn" class="primary-btn">Detect update</button>
+            <button id="refreshNewsBtn" class="primary-btn" style="margin-left: 8px;">Refresh News</button>
           </div>
         </header>
 
@@ -109,17 +109,19 @@
               </div>
               <div class="translation-card">
                 <div>
-                  <span class="label">Original</span>
-                  <p id="originalText"></p>
-                </div>
-                <div>
-                  <span class="label">English translation</span>
-                  <p id="translatedText"></p>
+                  <span class="label">Intelligence Content (English)</span>
+                  <p id="translatedText">Translation will appear here.</p>
                 </div>
               </div>
               <div class="summary-block">
-                <span class="label">Context summary</span>
-                <p id="summaryText"></p>
+                <span class="label">Matched Keywords</span>
+                <div id="matchedKeywords" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
+                  <span style="opacity: 0.6; font-size: 14px;">Select an alert</span>
+                </div>
+                <span class="label">Intelligence summary</span>
+                <div id="summaryText">
+                  <p>Select a live alert from the feed to view AI-generated summaries, news bullets, and matched keywords.</p>
+                </div>
               </div>
               <div class="detail-actions">
                 <button id="ackBtn">Acknowledge</button>
@@ -170,8 +172,47 @@
               <p class="eyebrow">Coverage</p>
               <h2>Multi-Platform Monitoring</h2>
             </div>
-            <button id="refreshSourcesBtn">Refresh sources</button>
+            <div class="header-actions">
+              <button id="showAddSourceBtn" class="primary-btn">Add new source</button>
+              <button id="refreshSourcesBtn">Refresh sources</button>
+            </div>
           </div>
+
+          <!-- Add Source Modal/Form -->
+          <div id="addSourceForm" class="panel source-form" style="display: none; margin-bottom: 2rem;">
+            <div class="panel-header">
+              <h3>Onboard New Intelligence Source</h3>
+            </div>
+            <form id="newSourceForm" class="form-grid">
+              <div class="field">
+                <label for="sourceName">Source Name</label>
+                <input type="text" id="sourceName" placeholder="e.g. Al-Jazeera" required>
+              </div>
+              <div class="field">
+                <label for="sourcePlatform">Platform</label>
+                <select id="sourcePlatform">
+                  <option value="News Website">News Website</option>
+                  <option value="Telegram">Telegram Channel</option>
+                  <option value="X / Social">X / Twitter</option>
+                  <option value="YouTube">YouTube Feed</option>
+                  <option value="Instagram">Instagram Page</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="sourceRegion">Region</label>
+                <input type="text" id="sourceRegion" placeholder="e.g. Jerusalem">
+              </div>
+              <div class="field">
+                <label for="sourceUrl">Endpoint URL</label>
+                <input type="url" id="sourceUrl" placeholder="https://..." required>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="primary-btn">Save Source</button>
+                <button type="button" id="cancelAddSource" class="secondary-btn">Cancel</button>
+              </div>
+            </form>
+          </div>
+
           <div id="sourceGrid" class="source-grid"></div>
         </section>
 
@@ -210,7 +251,7 @@
           <div class="reports-layout">
             <div class="panel">
               <div class="panel-header">
-                <h2>Trend Analytics</h2>
+                <h2>Platform Distribution</h2>
                 <span class="timestamp">Last 24 hours</span>
               </div>
               <div class="bar-chart" id="barChart"></div>

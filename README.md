@@ -28,6 +28,7 @@ A real-time full-stack AI-powered monitoring and intelligence alert platform.
    ```env
    TELEGRAM_BOT_TOKEN=your_bot_token
    TELEGRAM_CHAT_ID=your_chat_id
+   TELEGRAM_EXTRA_CHAT_IDS=optional_second_chat_id,optional_third_chat_id
    # Add other API keys as needed
    ```
 

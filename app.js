@@ -1,20 +1,7 @@
 let alerts = [];
-const sourceData = [
-  { name: "Quds News Network", platform: "Telegram", icon: "T", health: 97, alerts: 31, cadence: "15 sec" },
-  { name: "Temple Institute", platform: "Website", icon: "W", health: 94, alerts: 12, cadence: "60 sec" },
-  { name: "AlQuds", platform: "Instagram", icon: "I", health: 88, alerts: 19, cadence: "45 sec" },
-  { name: "Beyadenu", platform: "X/Twitter", icon: "X", health: 91, alerts: 15, cadence: "20 sec" },
-  { name: "New Arab", platform: "News Website", icon: "N", health: 99, alerts: 8, cadence: "120 sec" },
-  { name: "Regional Channels", platform: "YouTube", icon: "Y", health: 84, alerts: 7, cadence: "180 sec" },
-];
+let sourceData = [];
 
-const trendData = [
-  ["Telegram", 42],
-  ["X/Twitter", 31],
-  ["Web", 25],
-  ["Instagram", 19],
-  ["YouTube", 10],
-];
+let trendData = [];
 
 let selectedAlertId = null;
 let alertCount = 0;
@@ -30,7 +17,6 @@ const els = {
   priorityFilter: document.querySelector("#priorityFilter"),
   detailTitle: document.querySelector("#detailTitle"),
   detailPriority: document.querySelector("#detailPriority"),
-  originalText: document.querySelector("#originalText"),
   translatedText: document.querySelector("#translatedText"),
   summaryText: document.querySelector("#summaryText"),
   alertsMetric: document.querySelector("#alertsMetric"),
@@ -42,6 +28,10 @@ const els = {
   uptime: document.querySelector("#uptime"),
   reportText: document.querySelector("#reportText"),
   reportStatus: document.querySelector("#reportStatus"),
+  addSourceForm: document.querySelector("#addSourceForm"),
+  newSourceForm: document.querySelector("#newSourceForm"),
+  showAddSourceBtn: document.querySelector("#showAddSourceBtn"),
+  cancelAddSource: document.querySelector("#cancelAddSource"),
 };
 
 // --- API FETCHING ---
@@ -52,7 +42,6 @@ async function fetchAlerts() {
     const response = await fetch(`${API_URL}/alerts`);
     const data = await response.json();
     
-    // Check if we have new alerts
     if (data.length > alerts.length && alerts.length > 0) {
       showToast("New intelligence alert detected");
     }
@@ -63,39 +52,86 @@ async function fetchAlerts() {
     }
     
     updateMetrics();
+    updateTrendData();
     renderAlerts();
     renderDetail();
     renderArchive();
   } catch (err) {
     console.error('Failed to fetch alerts:', err);
-    showToast("Error connecting to live server");
   }
 }
 
-async function simulateHit() {
+async function refreshLiveNews() {
+  const btn = document.querySelector("#refreshNewsBtn");
+  if (!btn) return;
+  
+  const originalText = btn.textContent;
+  btn.textContent = "Fetching...";
+  btn.disabled = true;
+  showToast("Fetching live intelligence... this may take up to a minute.");
+  
   try {
-    const response = await fetch(`${API_URL}/simulate-hit`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        source: "Manual Trigger",
-        platform: "Web Console",
-        region: "Jerusalem",
-        priority: "high",
-        title: "Manually triggered detection event",
-        original: "حدث تم تحفيزه يدويا من لوحة التحكم.",
-        translation: "An event manually triggered from the control panel.",
-        summary: "This alert was generated manually to test the end-to-end notification pipeline.",
-      })
-    });
+    const response = await fetch(`${API_URL}/refresh-news`, { method: 'POST' });
     const result = await response.json();
     if (result.success) {
-      fetchAlerts();
+      showToast("Live news fetched successfully!");
+      await fetchAlerts();
+    } else {
+      showToast("Failed to fetch live news.");
     }
   } catch (err) {
-    showToast("Failed to trigger simulation");
+    showToast("Error triggering live fetch.");
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
   }
 }
+
+async function fetchSources() {
+  try {
+    const response = await fetch(`${API_URL}/sources`);
+    sourceData = await response.json();
+    renderSources();
+    els.sourcesMetric.textContent = sourceData.length;
+  } catch (err) {
+    console.error('Failed to fetch sources:', err);
+  }
+}
+
+async function addSource(source) {
+  try {
+    const response = await fetch(`${API_URL}/sources`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(source)
+    });
+    if (response.ok) {
+      showToast("Source added successfully");
+      fetchSources();
+      els.addSourceForm.style.display = 'none';
+      els.newSourceForm.reset();
+    }
+  } catch (err) {
+    showToast("Error adding source");
+  }
+}
+
+async function deleteSource(url) {
+  if (!confirm("Are you sure you want to remove this monitoring source?")) return;
+  try {
+    const response = await fetch(`${API_URL}/sources?url=${encodeURIComponent(url)}`, {
+      method: 'DELETE'
+    });
+    if (response.ok) {
+      showToast("Source removed");
+      fetchSources();
+    }
+  } catch (err) {
+    showToast("Error removing source");
+  }
+}
+
+
 
 // --- UI RENDERING ---
 
@@ -151,40 +187,73 @@ function renderAlerts() {
 }
 
 function renderDetail() {
-  if (alerts.length === 0) return;
-  const alert = alerts.find((item) => item.id === selectedAlertId) || filteredAlerts()[0] || alerts[0];
-  if (!alert) return;
+  const alert = alerts.find((item) => item.id === selectedAlertId) || filteredAlerts()[0] || (alerts.length > 0 ? alerts[0] : null);
+  const matchedKeywordsEl = document.querySelector("#matchedKeywords");
+  
+  if (!alert) {
+    els.detailTitle.textContent = "Select an alert";
+    els.detailPriority.className = "priority-pill watch";
+    els.detailPriority.textContent = "Watch";
+    els.translatedText.textContent = "Translation will appear here.";
+    els.summaryText.innerHTML = "<p>Select a live alert from the feed to view AI-generated summaries, news bullets, and matched keywords.</p>";
+    if (matchedKeywordsEl) matchedKeywordsEl.innerHTML = '<span style="opacity: 0.6; font-size: 14px;">Select an alert</span>';
+    return;
+  }
 
   selectedAlertId = alert.id;
   els.detailTitle.textContent = alert.title;
   els.detailPriority.className = `priority-pill ${alert.priority}`;
   els.detailPriority.textContent = priorityLabel(alert.priority);
-  els.originalText.textContent = alert.original;
   els.translatedText.textContent = alert.translation;
-  els.summaryText.textContent = alert.summary;
+
+  // Render matched keywords as pills
+  if (matchedKeywordsEl) {
+    const keywords = alert.matchedKeywords || [];
+    if (keywords.length > 0) {
+      matchedKeywordsEl.innerHTML = keywords.map(kw =>
+        `<span class="keyword-pill ${alert.priority}">${kw}</span>`
+      ).join('');
+    } else {
+      matchedKeywordsEl.innerHTML = '<span style="opacity: 0.5; font-size: 13px;">No keywords matched</span>';
+    }
+  }
+
+  // Render summary with bullets
+  let summaryHtml = `<p>${alert.summary || ''}</p>`;
+  if (alert.bullets && alert.bullets.length > 0) {
+    summaryHtml += '<ul class="bullet-list">' +
+      alert.bullets.map(b => `<li>${b}</li>`).join('') +
+      '</ul>';
+  }
+  els.summaryText.innerHTML = summaryHtml;
 }
 
 function renderSources() {
   els.sourceGrid.innerHTML = "";
   sourceData.forEach((source) => {
+    const icon = source.platform.charAt(0);
+    const health = source.health || 95;
     const card = document.createElement("article");
     card.className = "source-card";
     card.innerHTML = `
       <div class="source-card-header">
         <div class="brand">
-          <div class="source-platform">${source.icon}</div>
+          <div class="source-platform">${icon}</div>
           <div>
             <strong>${source.name}</strong>
             <span>${source.platform}</span>
           </div>
         </div>
-        <span class="timestamp">${source.cadence}</span>
+        <span class="timestamp">${source.active ? 'ACTIVE' : 'INACTIVE'}</span>
       </div>
       <div class="source-stats">
-        <span>${source.alerts} alerts today</span>
-        <strong>${source.health}%</strong>
+        <span>${source.region || 'Global'}</span>
+        <strong>${health}%</strong>
       </div>
-      <div class="health"><span style="width:${source.health}%"></span></div>
+      <div class="health"><span style="width:${health}%"></span></div>
+      <div class="card-actions">
+        <button class="delete-btn" onclick="deleteSource('${source.url}')">Remove</button>
+      </div>
     `;
     els.sourceGrid.appendChild(card);
   });
@@ -205,7 +274,30 @@ function renderArchive() {
   });
 }
 
+function updateTrendData() {
+  if (!alerts.length) {
+    trendData = [];
+    return;
+  }
+  
+  const counts = {};
+  alerts.forEach(alert => {
+    // Group by platform (Telegram, X, News Website, etc.)
+    const type = alert.platform || "Web";
+    counts[type] = (counts[type] || 0) + 1;
+  });
+  
+  // Convert to sorted array for the chart
+  trendData = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  renderTrends();
+}
+
 function renderTrends() {
+  if (!trendData.length) {
+    els.barChart.innerHTML = '<div class="translation-card"><p>No trend data available.</p></div>';
+    return;
+  }
+  
   const max = Math.max(...trendData.map(([, value]) => value));
   els.barChart.innerHTML = "";
   trendData.forEach(([name, value]) => {
@@ -291,7 +383,9 @@ document.querySelectorAll(".nav-item").forEach((button) => {
 
 els.searchInput.addEventListener("input", renderAlerts);
 els.priorityFilter.addEventListener("change", renderAlerts);
-document.querySelector("#simulateBtn").addEventListener("click", simulateHit);
+const refreshBtn = document.querySelector("#refreshNewsBtn");
+if (refreshBtn) refreshBtn.addEventListener("click", refreshLiveNews);
+
 document.querySelector("#ackBtn").addEventListener("click", () => showToast("Alert acknowledged"));
 document.querySelector("#escalateBtn").addEventListener("click", () => showToast("Alert escalated to response team"));
 
@@ -307,20 +401,33 @@ document.querySelector("#copyBriefBtn").addEventListener("click", async () => {
   }
 });
 
-document.querySelector("#refreshSourcesBtn").addEventListener("click", () => {
-  sourceData.forEach((source) => {
-    source.health = Math.min(99, Math.max(80, source.health + Math.floor(Math.random() * 7) - 3));
-  });
-  renderSources();
-  showToast("Source health refreshed");
-});
-
+document.querySelector("#refreshSourcesBtn").addEventListener("click", fetchSources);
 document.querySelector("#exportArchiveBtn").addEventListener("click", exportArchive);
 document.querySelector("#generateReportBtn").addEventListener("click", () => generateReport(false));
 
+els.showAddSourceBtn.addEventListener("click", () => {
+  els.addSourceForm.style.display = els.addSourceForm.style.display === 'none' ? 'block' : 'none';
+});
+
+els.cancelAddSource.addEventListener("click", () => {
+  els.addSourceForm.style.display = 'none';
+});
+
+els.newSourceForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const source = {
+    name: document.querySelector("#sourceName").value,
+    platform: document.querySelector("#sourcePlatform").value,
+    region: document.querySelector("#sourceRegion").value,
+    url: document.querySelector("#sourceUrl").value,
+    active: true
+  };
+  addSource(source);
+});
+
 // --- INITIALIZATION ---
 fetchAlerts();
-setInterval(fetchAlerts, 5000); // Poll every 5 seconds
-renderSources();
-renderTrends();
+fetchSources();
+setInterval(fetchAlerts, 5000); 
 setInterval(updateUptime, 1000);
+renderTrends();
